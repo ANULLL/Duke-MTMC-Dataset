@@ -2,6 +2,8 @@ import scipy.io as sio
 import numpy as np
 import pdb
 from itertools import groupby
+import operator as op
+import pprint
 
 A = sio.loadmat('ground_truth/trainval')
 A = A['trainData']
@@ -43,6 +45,21 @@ for i in range(0, len(people)):
 	people[i] = [x[0] for x in groupby(people[i])]
 
 # print(people)
+
+# find most popular trajectories
+trajs = {}
+
+for i in range(0, len(people)):
+	t = tuple(people[i])
+	if t in trajs:
+		trajs[t] = trajs[t] + 1
+	else:
+		trajs[t] = 1
+
+trajs = sorted(trajs.items(), key=op.itemgetter(1), reverse=True)
+
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(trajs[:11])
 
 # init camera matrix
 matrix = np.zeros((num_cams, num_cams))
