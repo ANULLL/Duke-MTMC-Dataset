@@ -5,6 +5,14 @@ from itertools import groupby
 import operator as op
 import pprint
 
+# Return string camera id for camera idx
+def cstr(i):
+	if i < 8:
+		return '%d' % (i+1)
+	else:
+		return 'x'
+
+
 A = sio.loadmat('ground_truth/trainval')
 A = A['trainData']
 
@@ -51,7 +59,7 @@ trajs = {}
 for i in range(0, len(people)):
 	t = tuple(people[i])
 	if t in trajs:
-		trajs[t] = trajs[t] + 1
+		trajs[t] += 1
 	else:
 		trajs[t] = 1
 
@@ -61,11 +69,14 @@ pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(trajs[:11])
 
 # compute camera matrix
-matrix = np.zeros((num_cams, num_cams))
+matrix = np.zeros((num_cams, num_cams + 1))
 
 for i in range(0, len(people)):
-	for j in range(0, len(people[i]) - 1):
+	for j in range(0, len(people[i])):
 		cam_1 = (int)(people[i][j]) - 1
+		if j == len(people[i]) - 1:
+			matrix[cam_1][num_cams] += 1
+			continue
 		cam_2 = (int)(people[i][j+1]) - 1
 		matrix[cam_1][cam_2] += 1
 
@@ -80,11 +91,15 @@ for i in range(0, np.shape(A)[0]):
 # compute camera matrix_t
 times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 150.0]
 fpm = 60 * 60
-matrix_t = np.zeros((len(times), num_cams, num_cams))
+matrix_t = np.zeros((len(times), num_cams, num_cams + 1))
 
 for i in range(0, len(people)):
-	for j in range(0, len(people[i]) - 1):
+	for j in range(0, len(people[i])):
 		cam_1 = (int)(people[i][j][0]) - 1
+		if j == (len(people[i]) - 1):
+			for idx, _ in enumerate(times):
+				matrix_t[idx][cam_1][num_cams] += 1
+			continue
 		cam_2 = (int)(people[i][j+1][0]) - 1
 		if cam_1 == cam_2:
 			continue
@@ -114,6 +129,6 @@ print('')
 print('Times (min.): ', times)
 for i in range(0, num_cams):
 	print('')
-	for j in range(0, num_cams):
+	for j in range(0, num_cams + 1):
 		if matrix_t_n[-1, i, j] >= 0.5:
-			print('cam %d -> %d: ' % (i+1, j+1), matrix_t_n[:, i, j])
+			print('cam %s -> %s: ' % (cstr(i), cstr(j)), matrix_t_n[:, i, j])
