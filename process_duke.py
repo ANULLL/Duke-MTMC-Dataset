@@ -94,6 +94,9 @@ for i in range(0, len(people)):
 			if frame_2 - frame_1 < (fpm * t):
 				matrix_t[idx][cam_1][cam_2] += 1
 
+matrix_t_n = np.zeros(np.shape(matrix_t))
+
+print('')
 for i in range(0, len(matrix_t)):
 	print('Time (min.): ', times[i])
 	np.set_printoptions()
@@ -101,7 +104,16 @@ for i in range(0, len(matrix_t)):
 	for j in range(0, len(matrix_t[i])):
 		row_sum = sum(matrix_t[i][j])
 		if row_sum != 0:
-			matrix_t[i][j] /= row_sum
-			matrix_t[i][j] *= 100.
+			matrix_t_n[i][j] = matrix_t[i][j] / row_sum
+			matrix_t_n[i][j] *= 100.
 	np.set_printoptions(formatter={'float': lambda x: "%06s" % "{0:2.2f}".format(x)})
-	print(matrix_t[i])
+	print(matrix_t_n[i])
+
+# print temporal progressions
+print('')
+print('Times (min.): ', times)
+for i in range(0, num_cams):
+	print('')
+	for j in range(0, num_cams):
+		if matrix_t_n[-1, i, j] >= 0.5:
+			print('cam %d -> %d: ' % (i+1, j+1), matrix_t_n[:, i, j])
