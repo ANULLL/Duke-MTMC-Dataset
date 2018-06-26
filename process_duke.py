@@ -89,9 +89,11 @@ for i in range(0, np.shape(A)[0]):
 	people[(int)(A[i][1])].append(A[i])
 
 # compute camera matrix_t
-times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 150.0]
+times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 90.0]
 fpm = 60 * 60
 matrix_t = np.zeros((len(times), num_cams, num_cams + 1))
+
+arrivals_t = [[[] for i in range(0, num_cams + 1)] for i in range(0, num_cams)]
 
 for i in range(0, len(people)):
 	for j in range(0, len(people[i])):
@@ -108,6 +110,7 @@ for i in range(0, len(people)):
 		for idx, t in enumerate(times):
 			if frame_2 - frame_1 < (fpm * t):
 				matrix_t[idx][cam_1][cam_2] += 1
+		arrivals_t[cam_1][cam_2].append((frame_2 - frame_1) / 60.);
 
 matrix_t_n = np.zeros(np.shape(matrix_t))
 
@@ -132,3 +135,14 @@ for i in range(0, num_cams):
 	for j in range(0, num_cams + 1):
 		if matrix_t_n[-1, i, j] >= 0.5:
 			print('cam %s -> %s: ' % (cstr(i), cstr(j)), matrix_t_n[:, i, j])
+
+# print arrival histograms
+bins = [0, 10, 20, 30, 60, 120, 500, 5400]
+print('')
+print('Times (sec.): ', bins)
+for i in range(0, num_cams):
+	print('')
+	for j in range(0, num_cams):
+		if matrix_t_n[-1, i, j] >= 0.5:
+			hist, bins = np.histogram(sorted(arrivals_t[i][j]), bins=bins)
+			print('cam %s -> %s: ' % (cstr(i), cstr(j)), hist / (1. * sum(hist)))
