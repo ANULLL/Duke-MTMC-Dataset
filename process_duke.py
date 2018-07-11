@@ -26,9 +26,6 @@ y_edges = range(1, 7142, 1)
 hist = np.histogram2d(A[:, 0], A[:, 1], bins=(x_edges, y_edges))
 # print(hist)
 
-# sort by person id (camera id, frame #) data
-A = A[np.lexsort((A[:, 2], A[:, 0], A[:, 1]))]
-
 # frame offets (from http://vision.cs.duke.edu/DukeMTMC/details.html)
 cam_offsets = [5542, 3606, 27243, 31181, 0, 22401, 18967, 46765]
 num_cams = len(cam_offsets)
@@ -39,8 +36,7 @@ for i in range(0, np.shape(A)[0]):
 	A[i][2] += cam_offsets[cam_id]
 
 # sort by frame # (camera id)
-ind = np.lexsort((A[:, 0], A[:, 2],))
-A = A[ind]
+A = A[np.lexsort((A[:, 0], A[:, 2],))]
 
 # build people list
 people = [[] for i in range(0, 7141)]
