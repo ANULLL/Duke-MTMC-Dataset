@@ -88,6 +88,29 @@ people = [[] for i in range(0, 7141)]
 for i in range(0, np.shape(A)[0]):
 	people[(int)(A[i][1])].append(A[i])
 
+# check # frames in cam / # frames in traj
+frames_in_cam = [0. for i in range(0, 7141)]
+frames_total = [0. for i in range(0, 7141)]
+
+for i in range(0, len(people)):
+	p = people[i]
+	if len(p) == 0:
+		continue
+	# frames in traj (total)
+	frames_total[i] = p[-1][2] - p[0][2]
+	# frames in cam
+	for j in range(1, len(p)):
+		if p[j][0] == p[j-1][0]:
+			frames_in_cam[i] += (p[j][2] - p[j-1][2])
+
+print("Frames in cam / total (examples):")
+print("pid 0043", frames_in_cam[43], frames_total[43])
+print("pid 0781", frames_in_cam[781], frames_total[781])
+print("pid 6046", frames_in_cam[6046], frames_total[6046])
+
+print("Frac in cam (overall):")
+print(sum(frames_in_cam) / sum(frames_total))
+
 # compute camera matrix_t
 times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 90.0]
 fpm = 60 * 60
