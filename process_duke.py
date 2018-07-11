@@ -16,6 +16,7 @@ def cstr(i):
 A = sio.loadmat('ground_truth/trainval')
 A = A['trainData']
 
+print("Train data shape:")
 print(np.shape(A))
 
 # build histogram
@@ -28,7 +29,7 @@ hist = np.histogram2d(A[:, 0], A[:, 1], bins=(x_edges, y_edges))
 # sort by person id (camera id, frame #) data
 A = A[np.lexsort((A[:, 2], A[:, 0], A[:, 1]))]
 
-# from http://vision.cs.duke.edu/DukeMTMC/details.html
+# frame offets (from http://vision.cs.duke.edu/DukeMTMC/details.html)
 cam_offsets = [5542, 3606, 27243, 31181, 0, 22401, 18967, 46765]
 num_cams = len(cam_offsets)
 
@@ -65,6 +66,7 @@ for i in range(0, len(people)):
 
 trajs = sorted(trajs.items(), key=op.itemgetter(1), reverse=True)
 
+print("Most popular trajectories:")
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(trajs[:11])
 
@@ -80,6 +82,7 @@ for i in range(0, len(people)):
 		cam_2 = (int)(people[i][j+1]) - 1
 		matrix[cam_1][cam_2] += 1
 
+print("Frequency matrix:")
 print(matrix)
 
 # build people list, II
@@ -109,7 +112,7 @@ print("pid 0781", frames_in_cam[781], frames_total[781])
 print("pid 6046", frames_in_cam[6046], frames_total[6046])
 
 print("Frac in cam (overall):")
-print(sum(frames_in_cam) / sum(frames_total))
+print("%0.6f" % (sum(frames_in_cam) / sum(frames_total)))
 
 # compute camera matrix_t
 times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 90.0]
@@ -137,7 +140,7 @@ for i in range(0, len(people)):
 
 matrix_t_n = np.zeros(np.shape(matrix_t))
 
-print('')
+print('\nFrequency matrices:')
 for i in range(0, len(matrix_t)):
 	print('Time (min.): ', times[i])
 	np.set_printoptions()
@@ -151,7 +154,7 @@ for i in range(0, len(matrix_t)):
 	print(matrix_t_n[i])
 
 # print temporal progressions
-print('')
+print('\nTraffic dest. distributions:')
 print('Times (min.): ', times)
 for i in range(0, num_cams):
 	print('')
@@ -161,7 +164,7 @@ for i in range(0, num_cams):
 
 # print arrival histograms
 bins = [0, 10, 20, 30, 60, 120, 500, 5400]
-print('')
+print('\nArrival time histograms:')
 print('Times (sec.): ', bins)
 for i in range(0, num_cams):
 	print('')
