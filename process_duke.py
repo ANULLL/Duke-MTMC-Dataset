@@ -38,6 +38,21 @@ for i in range(0, np.shape(A)[0]):
 # sort by frame # (camera id)
 A = A[np.lexsort((A[:, 0], A[:, 2],))]
 
+print("Frame range: ")
+print(A[0, 2], A[-1, 2])
+frames_ct = [[0, 0, 0] for i in range(0, 8)]
+for i in range(0, np.shape(A)[0]):
+	fid = int(A[i][2])
+	cid = int(A[i][0]) - 1
+	if fid < 49700 + 59280:
+		frames_ct[cid][0] += 1
+	elif fid < 108980 + 59280:
+		frames_ct[cid][1] += 1
+	else:
+		frames_ct[cid][2] += 1
+print("Detections in [16.5 min periods]: ")
+print(frames_ct)
+
 # build people list
 people = [[] for i in range(0, 7141)]
 
@@ -102,12 +117,12 @@ for i in range(0, len(people)):
 		if p[j][0] == p[j-1][0]:
 			frames_in_cam[i] += (p[j][2] - p[j-1][2])
 
-print("Frames in cam / total (examples):")
-print("pid 0043", frames_in_cam[43], frames_total[43])
-print("pid 0781", frames_in_cam[781], frames_total[781])
-print("pid 6046", frames_in_cam[6046], frames_total[6046])
+# print("Frames in cam / total (examples):")
+# print("pid 0043", frames_in_cam[43], frames_total[43])
+# print("pid 0781", frames_in_cam[781], frames_total[781])
+# print("pid 6046", frames_in_cam[6046], frames_total[6046])
 
-print("Frac in cam (overall):")
+print("Frac. frames in cam (overall):")
 print("%0.6f" % (sum(frames_in_cam) / sum(frames_total)))
 
 # compute camera matrix_t
@@ -136,18 +151,18 @@ for i in range(0, len(people)):
 
 matrix_t_n = np.zeros(np.shape(matrix_t))
 
-print('\nFrequency matrices:')
+# print('\nFrequency matrices:')
 for i in range(0, len(matrix_t)):
-	print('Time (min.): ', times[i])
+	# print('Time (min.): ', times[i])
 	np.set_printoptions()
-	print(matrix_t[i])
+	# print(matrix_t[i])
 	for j in range(0, len(matrix_t[i])):
 		row_sum = sum(matrix_t[i][j])
 		if row_sum != 0:
 			matrix_t_n[i][j] = matrix_t[i][j] / row_sum
 			matrix_t_n[i][j] *= 100.
 	np.set_printoptions(formatter={'float': lambda x: "%06s" % "{0:2.2f}".format(x)})
-	print(matrix_t_n[i])
+	# print(matrix_t_n[i])
 
 # print temporal progressions
 print('\nTraffic dest. distributions:')
