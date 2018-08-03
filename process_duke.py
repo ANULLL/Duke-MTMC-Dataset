@@ -8,7 +8,7 @@ import pprint
 # Return string camera id for camera idx
 def cstr(i):
 	if i < 8:
-		return '%d' % (i+1)
+		return '%d' % i
 	else:
 		return 'x'
 
@@ -170,7 +170,7 @@ print('Times (min.): ', times)
 for i in range(0, num_cams):
 	print('')
 	for j in range(0, num_cams + 1):
-		if matrix_t_n[-1, i, j] >= 1.0:
+		if matrix_t_n[-1, i, j] >= 10.0:
 			print('cam %s -> %s: ' % (cstr(i), cstr(j)), matrix_t_n[:, i, j])
 
 # print arrival histograms
@@ -180,6 +180,6 @@ print('Times (sec.): ', bins)
 for i in range(0, num_cams):
 	print('')
 	for j in range(0, num_cams):
-		if matrix_t_n[-1, i, j] >= 1.0:
+		if matrix_t_n[-1, i, j] >= 0.0:
 			hist, bins = np.histogram(sorted(arrivals_t[i][j]), bins=bins)
-			print('cam %s -> %s: ' % (cstr(i), cstr(j)), hist / (1. * sum(hist)))
+			print('cam %s -> %s: ' % (cstr(i), cstr(j)), hist / (1.e-8 + sum(hist)))
