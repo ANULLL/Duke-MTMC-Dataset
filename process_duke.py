@@ -38,6 +38,12 @@ for i in range(0, np.shape(A)[0]):
 # sort by frame # (camera id)
 A = A[np.lexsort((A[:, 0], A[:, 2],))]
 
+# extract segments
+idx = A[:, 2]
+A_1 = A[idx < 108980]
+A_2 = A[(idx < 168260) & (idx >= 108980)]
+A_3 = A[idx >= 168260]
+
 print("Frame range: ")
 print(A[0, 2], A[-1, 2])
 frames_ct = [[0, 0, 0] for i in range(0, 8)]
