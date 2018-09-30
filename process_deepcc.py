@@ -5,6 +5,7 @@ from itertools import groupby
 import operator as op
 import pprint
 import os
+import math
 
 NUM_PIDS = 800
 
@@ -20,6 +21,13 @@ def cstr(i):
 		return '%d' % i
 	else:
 		return 'x'
+
+def my_floor(x, base=5):
+    return int(base * math.floor(float(x)/base))
+
+def my_ceil(x, base=5):
+    return int(base * math.ceil(float(x)/base))
+
 
 curr_dir = os.path.dirname(__file__)
 
@@ -177,6 +185,9 @@ for i in range(0, num_cams):
 		if matrix_t_n[-1, i, j] >= 10.0:
 			print('cam %s -> %s: ' % (cstr(i), cstr(j)), matrix_t_n[:, i, j])
 
+sta_t = np.zeros((num_cams, num_cams + 1))
+end_t = np.zeros((num_cams, num_cams + 1))
+
 # print arrival histograms
 bins = [0, 10, 20, 30, 60, 120, 500, 5400]
 print('\nArrival time histograms:')
@@ -187,3 +198,24 @@ for i in range(0, num_cams):
 		if matrix_t_n[-1, i, j] >= 0.0:
 			hist, bins = np.histogram(sorted(arrivals_t[i][j]), bins=bins)
 			print('cam %s -> %s: ' % (cstr(i), cstr(j)), hist / (1.e-8 + sum(hist)))
+
+			ij_num = len(arrivals_t[i][j])
+
+			if ij_num > 0:
+				perc_01 = 0
+
+				perc_99 = ij_num - (1.0 * ij_num / 100.0)
+				perc_99 = int(round(perc_99)) - 1
+
+				sta_t[i][j] = my_floor(sorted(arrivals_t[i][j])[perc_01])
+				end_t[i][j] = my_ceil(sorted(arrivals_t[i][j])[perc_99])
+
+				# print('num arrivals', ij_num)
+				# print(' 1%: {:3d} {:3.1f}'.format(perc_01 + 1, sta_t[i][j]))
+				# print('99%: {:3d} {:3.1f}'.format(perc_99 + 1, end_t[i][j]))
+
+np.set_printoptions(formatter={'float': lambda x: "%06s" % "{0:2.0f}".format(x)})
+print('\nStart times:')
+print(sta_t)
+print('End times:')
+print(end_t)
