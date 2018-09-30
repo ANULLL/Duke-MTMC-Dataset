@@ -5,6 +5,15 @@ from itertools import groupby
 import operator as op
 import pprint
 
+NUM_PIDS = 7141
+
+CAM_IDX = 0
+PER_IDX = 1
+FRM_IDX = 2
+
+DIV_ONE = 108980
+DIV_TWO = 168260
+
 # Return string camera id for camera idx
 def cstr(i):
 	if i < 8:
@@ -21,9 +30,9 @@ print(np.shape(A))
 
 # build histogram
 x_edges = range(1, 10, 1)
-y_edges = range(1, 7142, 1)
+y_edges = range(1, NUM_PIDS + 1, 1)
 
-hist = np.histogram2d(A[:, 0], A[:, 1], bins=(x_edges, y_edges))
+hist = np.histogram2d(A[:, CAM_IDX], A[:, PER_IDX], bins=(x_edges, y_edges))
 # print(hist)
 
 # frame offets (from http://vision.cs.duke.edu/DukeMTMC/details.html)
@@ -32,27 +41,27 @@ num_cams = len(cam_offsets)
 
 # adjust frame #s
 for i in range(0, np.shape(A)[0]):
-	cam_id = (int)(A[i][0]) - 1
-	A[i][2] += cam_offsets[cam_id]
+	cam_id = (int)(A[i][CAM_IDX]) - 1
+	A[i][FRM_IDX] += cam_offsets[cam_id]
 
 # sort by frame # (camera id)
-A = A[np.lexsort((A[:, 0], A[:, 2],))]
+A = A[np.lexsort((A[:, CAM_IDX], A[:, FRM_IDX],))]
 
 # extract segments
-idx = A[:, 2]
-A_1 = A[idx < 108980]
-A_2 = A[(idx < 168260) & (idx >= 108980)]
-A_3 = A[idx >= 168260]
+idx = A[:, FRM_IDX]
+A_1 = A[idx < DIV_ONE]
+A_2 = A[(idx < DIV_TWO) & (idx >= DIV_ONE)]
+A_3 = A[idx >= DIV_TWO]
 
 print("Frame range: ")
-print(A[0, 2], A[-1, 2])
+print(A[0, FRM_IDX], A[-1, FRM_IDX])
 frames_ct = [[0, 0, 0] for i in range(0, 8)]
 for i in range(0, np.shape(A)[0]):
-	fid = int(A[i][2])
-	cid = int(A[i][0]) - 1
-	if fid < 49700 + 59280:
+	fid = int(A[i][FRM_IDX])
+	cid = int(A[i][CAM_IDX]) - 1
+	if fid < DIV_ONE:
 		frames_ct[cid][0] += 1
-	elif fid < 108980 + 59280:
+	elif fid < DIV_TWO:
 		frames_ct[cid][1] += 1
 	else:
 		frames_ct[cid][2] += 1
@@ -60,10 +69,10 @@ print("Detections in [16.5 min periods]: ")
 print(frames_ct)
 
 # build people list
-people = [[] for i in range(0, 7141)]
+people = [[] for i in range(0, NUM_PIDS)]
 
 for i in range(0, np.shape(A)[0]):
-	people[(int)(A[i][1])].append(A[i][0])
+	people[(int)(A[i][PER_IDX])].append(A[i][CAM_IDX])
 
 # group by camera id
 for i in range(0, len(people)):
@@ -103,30 +112,25 @@ print("Frequency matrix:")
 print(matrix)
 
 # build people list, II
-people = [[] for i in range(0, 7141)]
+people = [[] for i in range(0, NUM_PIDS)]
 
 for i in range(0, np.shape(A)[0]):
 	people[(int)(A[i][1])].append(A[i])
 
 # check # frames in cam / # frames in traj
-frames_in_cam = [0. for i in range(0, 7141)]
-frames_total = [0. for i in range(0, 7141)]
+frames_in_cam = [0. for i in range(0, NUM_PIDS)]
+frames_total = [0. for i in range(0, NUM_PIDS)]
 
 for i in range(0, len(people)):
 	p = people[i]
 	if len(p) == 0:
 		continue
 	# frames in traj (total)
-	frames_total[i] = p[-1][2] - p[0][2]
+	frames_total[i] = p[-1][FRM_IDX] - p[0][FRM_IDX]
 	# frames in cam
 	for j in range(1, len(p)):
-		if p[j][0] == p[j-1][0]:
-			frames_in_cam[i] += (p[j][2] - p[j-1][2])
-
-# print("Frames in cam / total (examples):")
-# print("pid 0043", frames_in_cam[43], frames_total[43])
-# print("pid 0781", frames_in_cam[781], frames_total[781])
-# print("pid 6046", frames_in_cam[6046], frames_total[6046])
+		if p[j][CAM_IDX] == p[j-1][CAM_IDX]:
+			frames_in_cam[i] += (p[j][FRM_IDX] - p[j-1][FRM_IDX])
 
 print("Frac. frames in cam (overall):")
 print("%0.6f" % (sum(frames_in_cam) / sum(frames_total)))
@@ -140,16 +144,16 @@ arrivals_t = [[[] for i in range(0, num_cams + 1)] for i in range(0, num_cams)]
 
 for i in range(0, len(people)):
 	for j in range(0, len(people[i])):
-		cam_1 = (int)(people[i][j][0]) - 1
+		cam_1 = (int)(people[i][j][CAM_IDX]) - 1
 		if j == (len(people[i]) - 1):
 			for idx, _ in enumerate(times):
 				matrix_t[idx][cam_1][num_cams] += 1
 			continue
-		cam_2 = (int)(people[i][j+1][0]) - 1
+		cam_2 = (int)(people[i][j+1][CAM_IDX]) - 1
 		if cam_1 == cam_2:
 			continue
-		frame_1 = people[i][j][2]
-		frame_2 = people[i][j+1][2]
+		frame_1 = people[i][j][FRM_IDX]
+		frame_2 = people[i][j+1][FRM_IDX]
 		for idx, t in enumerate(times):
 			if frame_2 - frame_1 < (fpm * t):
 				matrix_t[idx][cam_1][cam_2] += 1
