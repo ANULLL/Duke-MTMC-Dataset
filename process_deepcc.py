@@ -205,14 +205,18 @@ for i in range(0, num_cams):
 				perc_01 = 0
 
 				perc_99 = ij_num - (1.0 * ij_num / 100.0)
-				perc_99 = int(round(perc_99)) - 1
+				perc_99 = min(int(round(perc_99)), ij_num - 1) - 1
 
-				sta_t[i][j] = my_floor(sorted(arrivals_t[i][j])[perc_01])
-				end_t[i][j] = my_ceil(sorted(arrivals_t[i][j])[perc_99])
+				sta = sorted(arrivals_t[i][j])[perc_01]
+				end = sorted(arrivals_t[i][j])[perc_99]
 
 				# print('num arrivals', ij_num)
-				# print(' 1%: {:3d} {:3.1f}'.format(perc_01 + 1, sta_t[i][j]))
-				# print('99%: {:3d} {:3.1f}'.format(perc_99 + 1, end_t[i][j]))
+				# print(' 1%: {:3d} {:3.1f}'.format(perc_01 + 1, sta))
+				# print('99%: {:3d} {:3.1f}'.format(perc_99 + 1, end))
+
+				if ij_num > 2:
+					sta_t[i][j] = my_floor(sta)
+					end_t[i][j] = my_ceil(end)
 
 np.set_printoptions(formatter={'float': lambda x: "%06s" % "{0:2.0f}".format(x)})
 print('\nStart times:')
