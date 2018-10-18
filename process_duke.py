@@ -12,8 +12,10 @@ CAM_IDX = 0
 PER_IDX = 1
 FRM_IDX = 2
 
+DIV_BEG = 49700
 DIV_ONE = 108980
 DIV_TWO = 168260
+DIV_END = 227540
 
 # Return string camera id for camera idx
 def cstr(i):
@@ -62,17 +64,18 @@ A_3 = A[idx >= DIV_TWO]
 
 print("Frame range: ")
 print(A[0, FRM_IDX], A[-1, FRM_IDX])
-frames_ct = [[0, 0, 0] for i in range(0, 8)]
+
+fps = 60
+interv = 120
+num_intervs = int((DIV_END - DIV_BEG) / (fps * interv)) + 1
+frames_ct = [([0] * num_intervs) for i in range(0, 8)]
 for i in range(0, np.shape(A)[0]):
 	fid = int(A[i][FRM_IDX])
 	cid = int(A[i][CAM_IDX]) - 1
-	if fid < DIV_ONE:
-		frames_ct[cid][0] += 1
-	elif fid < DIV_TWO:
-		frames_ct[cid][1] += 1
-	else:
-		frames_ct[cid][2] += 1
-print("Detections in [16.5 min periods]: ")
+	p_idx = int((fid - DIV_BEG) / (fps * interv))
+	assert(p_idx >= 0)
+	frames_ct[cid][p_idx] += 1
+print("Detections in each of %d [%d sec] periods: " % (num_intervs, interv))
 print(frames_ct)
 
 # build people list
@@ -99,7 +102,7 @@ for i in range(0, len(people)):
 
 trajs = sorted(trajs.items(), key=op.itemgetter(1), reverse=True)
 
-print("Most popular trajectories:")
+print("\nMost popular trajectories:")
 pp = pprint.PrettyPrinter(indent=4)
 pp.pprint(trajs[:11])
 
