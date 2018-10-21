@@ -205,7 +205,7 @@ for i in range(0, num_cams):
 				perc_01 = 0
 
 				perc_99 = ij_num - (1.0 * ij_num / 100.0)
-				perc_99 = min(int(round(perc_99)), ij_num - 1) - 1
+				perc_99 = int(round(perc_99)) - 1
 
 				sta = sorted(arrivals_t[i][j])[perc_01]
 				end = sorted(arrivals_t[i][j])[perc_99]
