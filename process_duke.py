@@ -66,7 +66,7 @@ print("Frame range: ")
 print(A[0, FRM_IDX], A[-1, FRM_IDX])
 
 fps = 60
-interv = 120
+interv = 300
 num_intervs = int((DIV_END - DIV_BEG) / (fps * interv)) + 1
 frames_ct = [([0] * num_intervs) for i in range(0, 8)]
 for i in range(0, np.shape(A)[0]):
@@ -146,11 +146,13 @@ print("Frac. frames in cam (overall):")
 print("%0.6f" % (sum(frames_in_cam) / sum(frames_total)))
 
 # compute camera matrix_t
-times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 90.0]
-fpm = 60 * 60
+times = [0.1, 0.2, 0.5, 1.0, 2.0, 10.0, 90.0] # minutes
+frm_per_sec = 60.
+sec_per_min = 60.
 matrix_t = np.zeros((len(times), num_cams, num_cams + 1))
 
 arrivals_t = [[[] for i in range(0, num_cams + 1)] for i in range(0, num_cams)]
+arrivals_t_inv = [[[] for i in range(0, num_cams)] for i in range(0, num_cams)]
 
 for i in range(0, len(people)):
 	for j in range(0, len(people[i])):
@@ -165,9 +167,17 @@ for i in range(0, len(people)):
 		frame_1 = people[i][j][FRM_IDX]
 		frame_2 = people[i][j+1][FRM_IDX]
 		for idx, t in enumerate(times):
-			if frame_2 - frame_1 < (fpm * t):
+			if frame_2 - frame_1 < (frm_per_sec * sec_per_min * t):
 				matrix_t[idx][cam_1][cam_2] += 1
-		arrivals_t[cam_1][cam_2].append((frame_2 - frame_1) / 60.);
+		travel_t = (frame_2 - frame_1) / sec_per_min
+		arrivals_t[cam_1][cam_2].append(travel_t)
+		arrivals_t_inv[cam_2][cam_1].append(travel_t)
+
+print('\nArrival times')
+arrivals_t_fmt = [[[float("%.2f" % i) for i in x] for x in y] for y in arrivals_t_inv]
+for i in range(0, len(arrivals_t_fmt)):
+	print("\nArrivals at camera %i:" % i)
+	print(arrivals_t_fmt[i])
 
 matrix_t_n = np.zeros(np.shape(matrix_t))
 
