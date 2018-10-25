@@ -75,8 +75,8 @@ for i in range(0, np.shape(A)[0]):
 	p_idx = int((fid - DIV_BEG) / (fps * interv))
 	assert(p_idx >= 0)
 	frames_ct[cid][p_idx] += 1
-print("Detections in each of %d [%d sec] periods: " % (num_intervs, interv))
-print(frames_ct)
+# print("Detections in each of %d [%d sec] periods: " % (num_intervs, interv))
+# print(frames_ct)
 
 # build people list
 people = [[] for i in range(0, NUM_PIDS)]
@@ -173,11 +173,11 @@ for i in range(0, len(people)):
 		arrivals_t[cam_1][cam_2].append(travel_t)
 		arrivals_t_inv[cam_2][cam_1].append(travel_t)
 
-print('\nArrival times')
+# print('\nArrival times')
 arrivals_t_fmt = [[[float("%.2f" % i) for i in x] for x in y] for y in arrivals_t_inv]
-for i in range(0, len(arrivals_t_fmt)):
-	print("\nArrivals at camera %i:" % i)
-	print(arrivals_t_fmt[i])
+# for i in range(0, len(arrivals_t_fmt)):
+	# print("\nArrivals at camera %i:" % i)
+	# print(arrivals_t_fmt[i])
 
 matrix_t_n = np.zeros(np.shape(matrix_t))
 
